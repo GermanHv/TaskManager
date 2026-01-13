@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TaskManager.DTOs
+namespace TaskManager.DTOs.TaskDto
 {
     public class UpdateTaskRequest
     {

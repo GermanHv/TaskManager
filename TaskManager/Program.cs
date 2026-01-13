@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Context;
+using TaskManager.Utilities.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
+
+builder.Services.AddServices();
 
 var app = builder.Build();
 

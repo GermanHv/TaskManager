@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Context;
-using TaskManager.DTOs;
+using TaskManager.DTOs.TaskDto;
+using TaskManager.Interfaces.Tasks;
 using TaskManager.Models;
 
 namespace TaskManager.Controllers
@@ -12,9 +13,11 @@ namespace TaskManager.Controllers
     public class TasksController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public TasksController(AppDbContext context)
+        private readonly ITaskService _taskService;
+        public TasksController(AppDbContext context, ITaskService taskService)
         {
             _context = context;
+            _taskService = taskService;
         }
         [HttpGet]
         public async Task<ActionResult< List<TaskItem>>> Get()
@@ -58,10 +61,15 @@ namespace TaskManager.Controllers
             if (string.IsNullOrWhiteSpace(request.Title))
                 return BadRequest("Title es requerido.");
 
+            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == request.CategoryId);
+            if (!categoryExists)
+                return BadRequest("CategoryId no existe.");
+
             var entity = new TaskItem
             {
                 Title = request.Title.Trim(),
-                IsCompleted = false
+                IsCompleted = false,
+                CategoryId = request.CategoryId
             };
 
             // registro
@@ -182,6 +190,49 @@ namespace TaskManager.Controllers
                 .ToListAsync();
             return Ok(result); }
 
+        [HttpGet("with-category")]
+        public async Task<ActionResult<IEnumerable<TaskWithCategoryDto>>> GetWithCategory()
+        {
+            var result = await _context.Tasks
+                .Include(t => t.Category) // forma estandard de un JOIN
+                .OrderBy(t => t.Id)
+                .Select(t => new TaskWithCategoryDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    IsCompleted = t.IsCompleted,
+                    Step = t.Step,
+                    CreatedAt = t.CreatedAt,
+                    CategoryId = t.CategoryId ?? 0,
+                    CategoryName = t.Category.Name
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+
+        // Busqueda avanzada
+        [HttpGet("advanced-search")]
+        public async Task<ActionResult<PagedResultDto<TaskWithCategoryDto>>> AdvancedSearch(
+    [FromQuery] string? text,
+    [FromQuery] bool? completed,
+    [FromQuery] int? step,
+    [FromQuery] int? categoryId,
+    [FromQuery] string? categoryName,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10
+)
+        {
+
+            if (page <= 0) return BadRequest("Page debe ser mayor a 0.");
+            if (pageSize <= 0 || pageSize > 100) return BadRequest("PageSize debe estar entre 1 y 100.");
+
+            var result = await _taskService.AdvancedSearchAsync(
+                text, completed, step, categoryId, categoryName, page, pageSize);
+
+            return Ok(result);
+        }
     }
 }
 
