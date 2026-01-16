@@ -14,6 +14,7 @@ namespace TaskManager.Models
         public int Step { get; set; }
         // Guarda los datos de auditoría
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsDeleted { get; set; } = false;
         public int? CategoryId { get; set; } = 0;
         public Category Category { get; set; }
     }
