@@ -13,6 +13,5 @@ namespace TaskManager.Interfaces.Tasks
             int page,
             int pageSize
          );
-
     }
 }
