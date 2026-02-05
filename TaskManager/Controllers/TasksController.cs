@@ -233,6 +233,30 @@ namespace TaskManager.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("ajax-search")]
+        public async Task<IActionResult> AjaxSearch([FromQuery] string? text)
+        {
+            var query = _context.Tasks.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(text))
+                query = query.Where(t => t.Title.Contains(text));
+
+            var results = await query
+                .OrderBy(t => t.Id)
+                .Take(50)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Title,
+                    //t.CategoryName,
+                    t.IsCompleted,
+                    t.Step
+                })
+                .ToListAsync();
+
+            return Ok(results);
+        }
     }
 }
 
