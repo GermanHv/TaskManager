@@ -7,5 +7,6 @@
         public bool IsCompleted { get; set;}
         public int Step { get; set; }
         public int CategoryId { get; set; }
+        }
     }
 }
