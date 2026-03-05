@@ -46,7 +46,9 @@ namespace TaskManager.Controllers
             {
                 Id = task.Id,
                 Title = task.Title,
-                IsCompleted = task.IsCompleted
+                IsCompleted = task.IsCompleted,
+                Step = task.Step,
+                CategoryId = task.CategoryId ?? 0 //operador de coalescencia nulo
             };
 
             return Ok(dto);
